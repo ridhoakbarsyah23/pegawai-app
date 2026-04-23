@@ -59,17 +59,25 @@ class PegawaiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nip' => 'required|unique:pegawais',
-            'nama' => 'required',
+            // ✅ WAJIB
             'tgl_lahir' => 'required|date',
             'jenis_kelamin' => 'required',
-            'tempat_lahir' => 'required',
-            'alamat' => 'required',
-            'no_hp' => 'required',
-            'npwp' => 'required',
-            'tempat_tugas' => 'required',
+            'golongan_id' => 'required',
+            'agama_id' => 'required',
 
-            // ✅ FOTO OPSIONAL
+            // ❌ OPSIONAL
+            'nip' => 'nullable|unique:pegawais,nip',
+            'nama' => 'nullable',
+            'tempat_lahir' => 'nullable',
+            'alamat' => 'nullable',
+            'no_hp' => 'nullable',
+            'npwp' => 'nullable',
+            'tempat_tugas' => 'nullable',
+            'unit_kerja_id' => 'nullable',
+            'jabatan_id' => 'nullable',
+            'eselon_id' => 'nullable',
+
+            // 📸 FOTO
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -126,17 +134,25 @@ class PegawaiController extends Controller
         $pegawai = Pegawai::findOrFail($id);
 
         $validated = $request->validate([
-            'nip' => 'required|unique:pegawais,nip,' . $id,
-            'nama' => 'required',
+            // ✅ WAJIB
+            'tgl_lahir' => 'required|date',
+            'jenis_kelamin' => 'required',
+            'golongan_id' => 'required',
+            'agama_id' => 'required',
+
+            // ❌ OPSIONAL
+            'nip' => 'nullable|unique:pegawais,nip,' . $id,
+            'nama' => 'nullable',
             'tempat_lahir' => 'nullable',
-            'tgl_lahir' => 'nullable|date',
             'alamat' => 'nullable',
-            'jenis_kelamin' => 'nullable',
             'no_hp' => 'nullable',
             'npwp' => 'nullable',
             'tempat_tugas' => 'nullable',
+            'unit_kerja_id' => 'nullable',
+            'jabatan_id' => 'nullable',
+            'eselon_id' => 'nullable',
 
-            // ✅ FOTO OPSIONAL
+            // 📸 FOTO
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -145,7 +161,6 @@ class PegawaiController extends Controller
         // 📸 Update Foto
         if ($request->hasFile('foto')) {
 
-            // hapus lama
             if ($pegawai->foto && file_exists(public_path('foto/' . $pegawai->foto))) {
                 unlink(public_path('foto/' . $pegawai->foto));
             }
@@ -168,7 +183,6 @@ class PegawaiController extends Controller
     {
         $pegawai = Pegawai::findOrFail($id);
 
-        // hapus foto juga
         if ($pegawai->foto && file_exists(public_path('foto/' . $pegawai->foto))) {
             unlink(public_path('foto/' . $pegawai->foto));
         }
