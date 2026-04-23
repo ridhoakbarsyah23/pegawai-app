@@ -143,7 +143,7 @@
                     </div>
                 </div>
 
-                {{-- KONTAK PERSON--}}
+                {{-- KONTAK PERSON --}}
                 <div>
                     <h3 class="text-lg font-semibold mb-4 border-b pb-2">Kontak</h3>
 
@@ -164,9 +164,10 @@
 
                 {{-- FOTO --}}
                 <div>
-                    <label>Foto <span class="text-red-500">*</span></label>
-                    <input type="file" name="foto" id="fotoInput" accept="image/*" required
+                    <label>Foto</label>
+                    <input type="file" name="foto" id="fotoInput" accept="image/*"
                         class="w-full border rounded-lg px-3 py-2 bg-gray-50">
+
 
                     {{-- PREVIEW --}}
                     <div class="mt-3">

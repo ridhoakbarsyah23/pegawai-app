@@ -23,15 +23,15 @@ class PegawaiController extends Controller
             'eselon'
         ]);
 
-        // 🔍 SEARCH (nama / nip)
+        // 🔍 SEARCH
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->search . '%')
-                    ->orWhere('nip', 'like', '%' . $request->search . '%');
+                  ->orWhere('nip', 'like', '%' . $request->search . '%');
             });
         }
 
-        // 🏢 FILTER UNIT KERJA
+        // 🏢 FILTER
         if ($request->unit_kerja_id) {
             $query->where('unit_kerja_id', $request->unit_kerja_id);
         }
@@ -42,20 +42,20 @@ class PegawaiController extends Controller
         return view('pegawai.index', compact('pegawai', 'unitKerja'));
     }
 
-    // ➕ FORM TAMBAH DATA PEGAWAI
+    // ➕ FORM TAMBAH
     public function create()
     {
         return view('pegawai.create', [
-            'agama'        => Agama::select('id', 'nama')->distinct()->get(),
-            'unitKerja'    => UnitKerja::select('id', 'nama_unit')->distinct()->get(),
+            'agama'        => Agama::select('id', 'nama')->get(),
+            'unitKerja'    => UnitKerja::select('id', 'nama_unit')->get(),
             'jabatan'      => Jabatan::all(),
-            'golongan'     => Golongan::select('id', 'golongan')->distinct()->get(),
-            'eselon'       => Eselon::select('id', 'nama_eselon')->distinct()->get(),
+            'golongan'     => Golongan::select('id', 'golongan')->get(),
+            'eselon'       => Eselon::select('id', 'nama_eselon')->get(),
             'jenisKelamin' => ['L' => 'Laki-laki', 'P' => 'Perempuan'],
         ]);
     }
 
-    // 💾 SIMPAN DATA PEGAWAI
+    // 💾 SIMPAN
     public function store(Request $request)
     {
         $request->validate([
@@ -68,6 +68,9 @@ class PegawaiController extends Controller
             'no_hp' => 'required',
             'npwp' => 'required',
             'tempat_tugas' => 'required',
+
+            // ✅ FOTO OPSIONAL
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->only([
@@ -85,15 +88,14 @@ class PegawaiController extends Controller
             'no_hp',
             'npwp',
             'tempat_tugas',
-            
         ]);
 
-
-        // 📸 Upload Foto 
+        // 📸 Upload Foto (opsional)
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
             $namaFile = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('foto'), $namaFile);
+
             $data['foto'] = $namaFile;
         }
 
@@ -103,7 +105,7 @@ class PegawaiController extends Controller
             ->with('success', 'Data berhasil ditambahkan');
     }
 
-    // ✏️ FORM EDIT PEGAWAI
+    // ✏️ FORM EDIT
     public function edit($id)
     {
         $pegawai = Pegawai::findOrFail($id);
@@ -118,12 +120,11 @@ class PegawaiController extends Controller
         ]);
     }
 
-    // 🔄 UPDATE DATA PEGAWAI
+    // 🔄 UPDATE
     public function update(Request $request, $id)
     {
         $pegawai = Pegawai::findOrFail($id);
 
-        // VALIDASI
         $validated = $request->validate([
             'nip' => 'required|unique:pegawais,nip,' . $id,
             'nama' => 'required',
@@ -134,15 +135,17 @@ class PegawaiController extends Controller
             'no_hp' => 'nullable',
             'npwp' => 'nullable',
             'tempat_tugas' => 'nullable',
+
+            // ✅ FOTO OPSIONAL
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // AMBIL DATA YANG AKAN DIUPDATE
         $data = $validated;
 
-        // 📸 UPDATE FOTO
+        // 📸 Update Foto
         if ($request->hasFile('foto')) {
 
-            // hapus foto lama jika ada
+            // hapus lama
             if ($pegawai->foto && file_exists(public_path('foto/' . $pegawai->foto))) {
                 unlink(public_path('foto/' . $pegawai->foto));
             }
@@ -154,28 +157,32 @@ class PegawaiController extends Controller
             $data['foto'] = $namaFile;
         }
 
-        // UPDATE DATA PEGAWAI
         $pegawai->update($data);
 
-        return redirect()
-            ->route('pegawai.index')
+        return redirect()->route('pegawai.index')
             ->with('success', 'Data pegawai berhasil diperbarui');
     }
 
-    // ❌ HAPUS DATA PEGAWAI
+    // ❌ DELETE
     public function destroy($id)
     {
         $pegawai = Pegawai::findOrFail($id);
+
+        // hapus foto juga
+        if ($pegawai->foto && file_exists(public_path('foto/' . $pegawai->foto))) {
+            unlink(public_path('foto/' . $pegawai->foto));
+        }
+
         $pegawai->delete();
 
         return redirect()->route('pegawai.index')
             ->with('success', 'Data berhasil dihapus');
     }
 
-    // 🖨️ CETAK DATA PEAGWAI
+    // 🖨️ CETAK
     public function cetak()
     {
-        $pegawai = \App\Models\Pegawai::with([
+        $pegawai = Pegawai::with([
             'golongan',
             'eselon',
             'jabatan',
